@@ -20,9 +20,21 @@ jobs:
       - setup_remote_docker
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - run:
-          name: "Build docker imageand push to docker hub"
+          name: "Build docker image and push to docker hub"
           command: |
             cp Dockerfile.production Dockerfile
             docker build -t darkpsart/example-nodejs-express:latest .
             docker push darkpsart/example-nodejs-express:latest
+      - run:
+          name: "Call to rancher to deploy"
+          command: |
+            docker run -rm -it \
+              -e CATTLE_ACCESS_KEY="$CATTLE_ACCESS_KEY" \
+              -e CATTLE_SECRET_KEY="$CATTLE_SECRET_KEY" \
+              -e CATTLE_URL="$CATTLE_URL" \
+              etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
+              --imageUuid 'docker:darkpsart/example-nodejs-express:latest' \
+              -- batch_size 3 --start_first \
+              --auto_complete --timeout 600 \
+              /
       - run: echo Done
