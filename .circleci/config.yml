@@ -29,9 +29,9 @@ jobs:
           name: "Call to rancher to deploy"
           command: |
             docker run --rm -it \
-              -e CATTLE_ACCESS_KEY="$CATTLE_ACCESS_KEY" \
-              -e CATTLE_SECRET_KEY="$CATTLE_SECRET_KEY" \
-              -e CATTLE_URL="$CATTLE_URL" \
+              -e CATTLE_ACCESS_KEY="CB09DAA811D78E9ACFB9" \
+              -e CATTLE_SECRET_KEY="69eBUzS6GRK4huZHkc4PP46D4jusetJqKJseBTBw" \
+              -e CATTLE_URL="http://139.5.145.167:8080" \
               etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
               --imageUuid 'docker:darkpsart/example-nodejs-express:latest' \
               -- batch_size 3 --start_first \
