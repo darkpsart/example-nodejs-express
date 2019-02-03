@@ -49,20 +49,31 @@ jobs:
             docker push darkpsart/example-nodejs-express:latest
   deploy:
     docker:
-      - image: circleci/node:8.11.1-stretch
+      - image: etlweather/gaucho
+        enviroment:
+          CATTLE_ACCESS_KEY: "$CATTLE_ACCESS_KEY"
+          CATTLE_SECRET_KEY: "$CATTLE_SECRET_KEY"
+          CATTLE_URL: "$CATTLE_URL"
     working_directory: ~/repo
     steps:
       - run:
           name: "Call to rancher to deploy"
           command: |
-            docker run --rm -it \
-              -e CATTLE_ACCESS_KEY="$CATTLE_ACCESS_KEY" \
-              -e CATTLE_SECRET_KEY="$CATTLE_SECRET_KEY" \
-              -e CATTLE_URL="$CATTLE_URL" \
-              etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
+              /app/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
               --imageUuid 'docker:darkpsart/example-nodejs-express:latest' \
               --batch_size 3 --start_first \
               --auto_complete --timeout 600
+      # - run:
+      #     name: "Call to rancher to deploy"
+      #     command: |
+      #       docker run --rm -it \
+      #         -e CATTLE_ACCESS_KEY="$CATTLE_ACCESS_KEY" \
+      #         -e CATTLE_SECRET_KEY="$CATTLE_SECRET_KEY" \
+      #         -e CATTLE_URL="$CATTLE_URL" \
+      #          etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
+      #         --imageUuid 'docker:darkpsart/example-nodejs-express:latest' \
+      #         --batch_size 3 --start_first \
+      #         --auto_complete --timeout 600
 workflows:
   version: 2
   build_test_ship_deploy:
