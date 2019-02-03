@@ -68,14 +68,14 @@ workflows:
   build_test_ship_deploy:
     jobs:
       - build
-      - test
+      - test:
           requires:
             - build
-      - ship
+      - ship:
           requires:
             - build
             - test
-      - deploy
+      - deploy:
           type: approval
           requires:
             - build
