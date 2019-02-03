@@ -16,7 +16,29 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
+  test:
+    docker:
+      - image: circleci/node:8.11.1-stretch
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback
+            - v1-dependencies-
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
       - run: npm test
+  ship:
+    docker:
+      - image: circleci/node:8.11.1-stretch
+    working_directory: ~/repo
+    steps:
+      - checkout
       - setup_remote_docker
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - run:
@@ -25,6 +47,11 @@ jobs:
             cp Dockerfile.production Dockerfile
             docker build -t darkpsart/example-nodejs-express:latest .
             docker push darkpsart/example-nodejs-express:latest
+  deploy:
+    docker:
+      - image: circleci/node:8.11.1-stretch
+    working_directory: ~/repo
+    steps:
       - run:
           name: "Call to rancher to deploy"
           command: |
@@ -35,6 +62,22 @@ jobs:
               etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODE_JS \
               --imageUuid 'docker:darkpsart/example-nodejs-express:latest' \
               --batch_size 3 --start_first \
-              --auto_complete --timeout 600 \
-              /
-      - run: echo Done
+              --auto_complete --timeout 600
+workflows:
+  version: 2
+  build_test_ship_deploy:
+    jobs:
+      - build
+      - test
+          requires:
+            - build
+      - ship
+          requires:
+            - build
+            - test
+      - deploy
+          type: approval
+          requires:
+            - build
+            - test
+            - ship
